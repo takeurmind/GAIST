@@ -15,6 +15,7 @@ you can make some effects.
 It will be the breakthrough solutions for maintaining performance and reducing costs
 
 • Size the data and borrow Fashion-MNIST-based clothing models for Object Detection/Classifier
+
 • Depending on the application of Dataset, other classifiers can also be applied
 
 
