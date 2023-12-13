@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <title>GAIST Clothing Classifier</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    #loading-container {
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loading-container">
+    <div class="spinner-border text-primary" role="status">
+      <span class="sr-only">Loading...</span>
+    </div>
+    <p id="loading-message">Test is on process.</p>
+  </div>
+
+  <script>
+    async function checkFile(filePath) {
+        return new Promise((resolve) => {
+            var xhr = new XMLHttpRequest();
+            xhr.open('HEAD', filePath, true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4) {
+                    resolve(xhr.status == 200);
+                }
+            };
+            xhr.send();
+        });
+    }
+
+    async function checkAndRedirect() {
+        var benchmarkFilePath = './results/benchmark_result_data.csv';
+        var classifyingFilePath = './results/classifying_result_data.csv';
+
+        var benchmarkExists = await checkFile(benchmarkFilePath);
+        var classifyingExists = await checkFile(classifyingFilePath);
+
+        if (benchmarkExists || classifyingExists) {
+            window.location.href = './test-results';
+        } else {
+            setTimeout(checkAndRedirect, 5000);
+        }
+    }
+
+    checkAndRedirect();
+  </script>
+
+  <footer class="mt-4 text-center">
+    <p>&copy; 2023 GAIST Gwangju AIschool Supreme Team. All rights reserved.</p>
+    <p>Special Thanks to 김우중 위원님, 김희진 연구원님, 김세진 선생님<br>Made with ❤ from Gwangju</p>
+  </footer>
+
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+</body>
+</html>

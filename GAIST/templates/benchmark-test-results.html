@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inference Time and Accuracy Bar Charts</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container">
+    <a class="navbar-brand" href="{{ url_for('index') }}">
+      <img src="{{ url_for('static', filename='pictures/logo.png') }}" alt="GAIST Logo" height="50">
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item active">
+          <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('class_test_results') }}">Classifying Result</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('bench_test_results') }}">Benchmark Test Result</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('team_members') }}">About</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<ul class="nav nav-tabs" id="myTabs" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" id="inferenceTime-tab" data-toggle="tab" href="#inferenceTime" role="tab" aria-controls="inferenceTime" aria-selected="true">Inference Time</a>
+  </li>
+</ul>
+
+<div class="tab-content" id="myTabsContent">
+  <div class="tab-pane fade show active" id="inferenceTime" role="tabpanel" aria-labelledby="inferenceTime-tab">
+    <div style="width: 80%; margin: auto;">
+      <canvas id="inferenceTimeChart"></canvas>
+    </div>
+  </div>
+  <div id="data" hidden> 
+    {{ csv_data }}
+  </div>
+
+<footer class="mt-4 text-center">
+  <p>&copy; 2023 GAIST Gwangju AIschool Supreme Team. All rights reserved.</p>
+  <p>Special Thanks to 김우중 위원님, 김희진 연구원님, 김세진 선생님<br>Made with ❤ from Gwangju</p>
+</footer>
+
+<script>
+
+  var csvData = "{{ csv_data }}";
+
+
+  var dataElement = document.getElementById('data');
+  var decodedData = dataElement.innerHTML;
+  var div = document.createElement('div');
+  div.innerHTML = decodedData;
+  var decodedContent = div.textContent || div.innerText || "";
+
+  var rows = decodedContent.split(',');
+  console.log(rows)
+  var data = [];
+  for (var i = 0; i < rows.length; i++) {
+    var values = rows[i].split('\\t');
+    console.log(values)
+
+    if (i == 0 ){
+        t =  values[0].slice(-3)
+      } else {
+        t =  values[0].slice(3)
+      }
+    data.push({
+      processorMode : t.trim(),
+      model: values[1].trim(),
+      inferenceTime: parseFloat(values[2].substr(0,4).trim())
+    });
+  }
+
+  var cpuData = data.filter(item => item.processorMode === 'CPU');
+  var cpuIPEXData = data.filter(item => item.processorMode === 'GAIST');
+  var gpuData = data.filter(item => item.processorMode === 'GPU');
+
+  var ctxInferenceTime = document.getElementById('inferenceTimeChart').getContext('2d');
+  var inferenceTimeChart = new Chart(ctxInferenceTime, {
+    type: 'bar',
+    data: {
+      labels: ['VGG16', 'ResNet18', 'MobileNet'],
+      datasets: [
+        {
+          label: 'CPU Inference Time',
+          backgroundColor: 'rgba(255, 99, 132, 0.5)',
+          borderColor: 'rgba(255, 99, 132, 1)',
+          borderWidth: 1,
+          data: [
+            cpuData.find(item => item.model === 'VGG16').inferenceTime,
+            cpuData.find(item => item.model === 'ResNet18').inferenceTime,
+            cpuData.find(item => item.model === 'MobileNet').inferenceTime
+          ]
+        },
+        {
+          label: 'GAIST Inference Time',
+          backgroundColor: 'rgba(54, 162, 235, 0.5)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1,
+          data: [
+            cpuIPEXData.find(item => item.model === 'VGG16').inferenceTime,
+            cpuIPEXData.find(item => item.model === 'ResNet18').inferenceTime,
+            cpuIPEXData.find(item => item.model === 'MobileNet').inferenceTime
+          ]
+        },
+        {
+          label: 'GPU Inference Time',
+          backgroundColor: 'rgba(255, 206, 86, 0.5)',
+          borderColor: 'rgba(255, 206, 86, 1)',
+          borderWidth: 1,
+          data: [
+            gpuData.find(item => item.model === 'VGG16').inferenceTime,
+            gpuData.find(item => item.model === 'ResNet18').inferenceTime,
+            gpuData.find(item => item.model === 'MobileNet').inferenceTime
+          ]
+        }
+      ]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: 'Inference Time (s)'
+          }
+        }
+      }
+    }
+  });
+</script>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+</body>
+</html>
